@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+
+  db:
+    container_name: postgres
+    image: postgres:15.2-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quarkus-social
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db-postgres/db:/var/lib/postgresql/data
+      - ./db-postgres/import:/import
+    networks:
+      - quarkus-social
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.0
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - ./db-postgres/pgadmin:/root/.pgadmin
+    ports:
+      - 8090:80
+    networks:
+      - quarkus-social
+    restart: unless-stopped
+
+  backend:
+    image: api/quarkus-social:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - quarkus-social
+  
+networks:
+  quarkus-social:
+    name: quarkus-social-api
