@@ -1,6 +1,8 @@
 package io.github.carloshendvpm.quarkussocial.rest;
 
 import io.github.carloshendvpm.quarkussocial.rest.dto.CreateUserRequest;
+import io.github.carloshendvpm.quarkussocial.rest.quarkussocial.domain.model.User;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -15,12 +17,19 @@ import jakarta.ws.rs.core.Response;
 public class UserResource {
   
   @POST
+  @Transactional
   public Response createUser( CreateUserRequest userRequest ){
-    return Response.ok(userRequest).build();
+    User user = new User();
+    user.setAge(userRequest.getAge());
+    user.setName(userRequest.getName());
+
+    user.persist();
+
+    return Response.ok(user).build();
   }
 
   @GET
   public Response listAllUsers(){
-    return Response.ok().build();
+    return Response.ok(User.listAll()).build();
   }
 }
