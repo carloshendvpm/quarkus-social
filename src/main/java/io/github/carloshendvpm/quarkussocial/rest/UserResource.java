@@ -1,11 +1,16 @@
 package io.github.carloshendvpm.quarkussocial.rest;
 
+import java.util.Set;
+
 import io.github.carloshendvpm.quarkussocial.domain.model.User;
 import io.github.carloshendvpm.quarkussocial.domain.repository.UserRepository;
 import io.github.carloshendvpm.quarkussocial.rest.dto.CreateUserRequest;
+import io.github.carloshendvpm.quarkussocial.rest.dto.ResponseError;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -23,15 +28,25 @@ import jakarta.ws.rs.core.Response;
 public class UserResource {
   
   private UserRepository repository;
+  private Validator validator;
 
   @Inject
-  public UserResource(UserRepository repository){
+  public UserResource(UserRepository repository, Validator validatior){
     this.repository = repository;
+    this.validator = validatior;
   }
   
   @POST
   @Transactional
   public Response createUser( CreateUserRequest userRequest ){
+
+    Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
+
+    if(!violations.isEmpty()){ // se o set de violações não estiver vazio
+      ResponseError responseError = ResponseError.createFromValidation(violations);
+      return Response.status(400).entity(responseError).build();
+
+    }
     User user = new User();
     user.setAge(userRequest.getAge());
     user.setName(userRequest.getName());
