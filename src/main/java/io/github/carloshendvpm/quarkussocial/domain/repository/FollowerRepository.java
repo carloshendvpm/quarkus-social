@@ -1,5 +1,6 @@
 package io.github.carloshendvpm.quarkussocial.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.github.carloshendvpm.quarkussocial.domain.model.Follower;
@@ -18,4 +19,10 @@ public class FollowerRepository implements PanacheRepository<Follower> {
 
     return result.isPresent();
   }
+
+  public List<Follower> findByUser(Long userId){
+    PanacheQuery<Follower> query = find("user.id", userId);
+
+    return query.list();
+  } 
 }
